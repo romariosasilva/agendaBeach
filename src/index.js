@@ -28,8 +28,7 @@ app
 		res.render('index.html', {
 			siteName: process.env.SITE_NAME || 'Meu Site de Torneios'
 		});
-	})
-	.listen(process.env.PORT);						// Inicializacao do servidor
+	});
 
 
 // Exporta como função handler para Vercel
