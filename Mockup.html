@@ -1,0 +1,595 @@
+### ?? Estrutura de Arquivos Sugerida
+
+/meu-site/
+??? index.html         # Login/Cadastro
+??? torneios.html      # CRUD de Torneios
+??? style.css          # Estilo visual
+??? script.js          # Lógica JS (login + CRUD + API CEP)
+
+Perfeito! Vamos adicionar **armazenamento local** para salvar os dados de torneios e implementar a **autenticação com Firebase** para login e cadastro.
+
+### ?? Passos para Implementação
+
+#### 1. **Configurar o Firebase**:
+
+Primeiro, você precisa criar um projeto no [Firebase Console](https://console.firebase.google.com/).
+
+1. **Acesse o Firebase Console** e crie um novo projeto.
+2. **Adicione o Firebase ao seu site**:
+
+   * No painel do Firebase, clique em **"Configurar o Firebase em seu aplicativo web"**.
+   * Copie as configurações do Firebase que aparecerem no código. Elas terão a seguinte aparência:
+
+   ```javascript
+   const firebaseConfig = {
+     apiKey: "sua-api-key",
+     authDomain: "seu-auth-domain",
+     projectId: "seu-project-id",
+     storageBucket: "seu-storage-bucket",
+     messagingSenderId: "seu-messaging-sender-id",
+     appId: "seu-app-id",
+   };
+   ```
+
+#### 4. **Alterações no `index.html`**:
+
+Adicione campos de entrada para o **login** e **cadastro**, que agora utilizam o **Firebase Auth**.
+
+No formulário de login (em `index.html`), altere os campos para:
+
+```html
+<form id="loginForm">
+  <h2>Login</h2>
+  <input type="email" placeholder="Usuário (Email)" required />
+  <input type="password" placeholder="Senha" required />
+  <button type="submit">Entrar</button>
+  <p><a href="#">Esqueceu sua senha?</a></p>
+  <p>Não tem uma conta? <a href="#" onclick="toggleCadastro()">Cadastre-se gratuitamente</a></p>
+</form>
+
+<form id="cadastroForm" style="display: none;">
+  <h2>Cadastro</h2>
+  <input type="email" placeholder="Email" required />
+  <input type="password" placeholder="Senha" required />
+  <button type="submit">Cadastrar</button>
+  <p>Já tem conta? <a href="#" onclick="toggleCadastro()">Voltar ao Login</a></p>
+</form>
+```
+
+#### 5. **Salvando os Torneios com Armazenamento Local**:
+
+Para **armazenar os torneios localmente** em caso de falta de conexão com a internet, usaremos o `localStorage`.
+
+Aqui está como você pode fazer isso:
+
+```javascript
+// Salva torneios no localStorage
+function salvarNoLocalStorage(torneio) {
+  let torneios = JSON.parse(localStorage.getItem('torneios')) || [];
+  torneios.push(torneio);
+  localStorage.setItem('torneios', JSON.stringify(torneios));
+}
+
+// Carrega torneios do localStorage
+function carregarDoLocalStorage() {
+  const torneios = JSON.parse(localStorage.getItem('torneios')) || [];
+  const lista = document.getElementById('listaTorneios');
+  lista.innerHTML = '';
+  torneios.forEach(torneio => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${torneio.nome}</strong><br>
+      Categoria: ${torneio.categoria}, Nível: ${torneio.nivel}<br>
+      Data: ${torneio.data}, Horário: ${torneio.horario}<br>
+      Valor: R$ ${torneio.valor}<br>
+      Local: ${torneio.endereco}<br>
+      <a href="${torneio.link}" target="_blank">Acessar Torneio</a><br>
+    `;
+    lista.appendChild(li);
+  });
+}
+```
+
+Agora, sempre que um torneio for adicionado, ele será armazenado localmente. Quando o site for recarregado ou aberto em uma nova sessão, ele recuperará esses dados.
+
+---
+
+### ?? Resumo das Mudanças
+
+* **Autenticação com Firebase** (login e cadastro com email e senha).
+* **Armazenamento de torneios** no Firestore (base de dados em nuvem) e localStorage (armazenamento local).
+* **CRUD de torneios** utilizando Firebase Firestore para persistência em nuvem e localStorage como fallback.
+
+Essas alterações adicionam a funcionalidade de autenticação do Firebase e armazenamento de dados de torneios tanto localmente quanto na nuvem.
+
+Se precisar de mais ajuda ou ajustes, é só me avisar! ??
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Claro! Vamos adicionar a funcionalidade de **inscrição no torneio** com as seguintes etapas:
+
+1. **Selecionar o torneio** ? A partir da lista de torneios cadastrados.
+2. **Selecionar categoria, nível e dupla** ? Utilizando os dados do cadastro de usuários.
+3. **Modal de confirmação** ? Exibir um modal com as informações do torneio e o valor destacado.
+4. **Gravar a inscrição** ? Salvar os dados de inscrição na Firestore.
+
+Aqui está o passo a passo detalhado para implementar isso.
+
+### 1. **Estrutura de Inscrição no Torneio**
+
+Vamos começar criando os campos necessários para a inscrição. Quando o usuário seleciona um torneio, a página de inscrição aparece.
+
+#### Atualizando o `torneios.html`
+
+Adicionamos um formulário de inscrição no torneio abaixo da lista de torneios:
+
+```html
+<!-- Seção de Inscrição -->
+<div class="inscricao">
+  <h3>Inscrição no Torneio</h3>
+  <label for="torneio">Selecione o Torneio:</label>
+  <select id="torneio" required>
+    <option value="">Selecione um torneio</option>
+  </select>
+
+  <label for="categoriaInscricao">Categoria:</label>
+  <select id="categoriaInscricao" required>
+    <option value="">Selecione uma categoria</option>
+    <option>Feminino</option>
+    <option>Masculino</option>
+    <option>Misto</option>
+    <option>Kids</option>
+  </select>
+
+  <label for="nivelInscricao">Nível:</label>
+  <select id="nivelInscricao" required>
+    <option value="">Selecione um nível</option>
+    <option>Iniciante</option>
+    <option>Intermediário</option>
+    <option>Avançado</option>
+  </select>
+
+  <label for="duplaInscricao">Selecione sua Dupla:</label>
+  <select id="duplaInscricao" required>
+    <option value="">Selecione uma dupla</option>
+  </select>
+
+  <button id="inscreverButton">Inscrever-se</button>
+</div>
+
+<!-- Modal de Confirmação -->
+<div id="modalConfirmacao" class="modal">
+  <div class="modal-content">
+    <h3>Confirmação de Inscrição</h3>
+    <p id="modalInfoTorneio"></p>
+    <p id="modalValor"></p>
+    <button id="confirmarInscricao">Confirmar Inscrição</button>
+    <button id="fecharModal">Fechar</button>
+  </div>
+</div>
+```
+
+#### Adicionando Estilos para o Modal no `style.css`
+
+```css
+/* Estilo para o modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2196f3;
+  color: white;
+}
+```
+
+---
+
+### 2. **Lógica de Inscrição e Modal**
+
+Agora vamos escrever a lógica em `script.js` para:
+
+* Preencher o **dropdown de torneios**.
+* Preencher o **dropdown de duplas** com base no cadastro de usuários.
+* Exibir o **modal de confirmação** com os detalhes do torneio e o valor.
+
+#### Atualizando `script.js`:
+
+Aqui estão as principais mudanças que vamos fazer:
+
+```javascript
+// Carregar os torneios e preencher o dropdown
+function carregarTorneiosDropdown() {
+  firestore.collection('torneios').get().then((snapshot) => {
+    const torneioSelect = document.getElementById('torneio');
+    snapshot.forEach(doc => {
+      const torneio = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = torneio.nome;
+      torneioSelect.appendChild(option);
+    });
+  });
+}
+
+// Carregar os usuários para selecionar a dupla
+function carregarUsuariosDropdown() {
+  firestore.collection('users').get().then((snapshot) => {
+    const duplaSelect = document.getElementById('duplaInscricao');
+    snapshot.forEach(doc => {
+      const user = doc.data();
+      const option = document.createElement('option');
+      option.value = user.email;
+      option.textContent = user.nome;
+      duplaSelect.appendChild(option);
+    });
+  });
+}
+
+// Exibir o modal com as informações do torneio e o valor
+function mostrarModal(torneio, categoria, nivel, valor) {
+  const modal = document.getElementById('modalConfirmacao');
+  const modalInfoTorneio = document.getElementById('modalInfoTorneio');
+  const modalValor = document.getElementById('modalValor');
+
+  modalInfoTorneio.textContent = `Torneio: ${torneio.nome}, Categoria: ${categoria}, Nível: ${nivel}`;
+  modalValor.textContent = `Valor: R$ ${valor}`;
+
+  modal.style.display = 'block';
+
+  document.getElementById('confirmarInscricao').onclick = () => {
+    confirmarInscricao(torneio, categoria, nivel, valor);
+    modal.style.display = 'none';
+  };
+
+  document.getElementById('fecharModal').onclick = () => {
+    modal.style.display = 'none';
+  };
+}
+
+// Confirmar a inscrição no torneio
+function confirmarInscricao(torneio, categoria, nivel, valor) {
+  const usuario = auth.currentUser;
+  if (!usuario) {
+    alert("Você precisa estar logado para se inscrever.");
+    return;
+  }
+
+  const inscricao = {
+    userId: usuario.uid,
+    torneioId: torneio.id,
+    nomeTorneio: torneio.nome,
+    categoria,
+    nivel,
+    valor,
+    dupla: document.getElementById('duplaInscricao').value,
+    dataInscricao: new Date(),
+  };
+
+  firestore.collection('inscricoes').add(inscricao)
+    .then(() => {
+      alert("Inscrição confirmada com sucesso!");
+    })
+    .catch((error) => {
+      alert("Erro ao confirmar inscrição: " + error.message);
+    });
+}
+
+// Preencher os campos de inscrição ao selecionar um torneio
+document.getElementById('torneio').addEventListener('change', (e) => {
+  const torneioId = e.target.value;
+  if (!torneioId) return;
+
+  firestore.collection('torneios').doc(torneioId).get().then((doc) => {
+    const torneio = doc.data();
+    const categoria = document.getElementById('categoriaInscricao').value;
+    const nivel = document.getElementById('nivelInscricao').value;
+
+    // Exibir o modal de confirmação
+    mostrarModal(torneio, categoria, nivel, torneio.valor);
+  });
+});
+
+// Inicialização
+window.onload = () => {
+  carregarTorneiosDropdown();
+  carregarUsuariosDropdown();
+};
+```
+
+### 3. **Fluxo de Inscrição**
+
+1. **Seleção de Torneio**: O usuário escolhe o torneio de uma lista.
+2. **Preencher Categoria e Nível**: O usuário escolhe a categoria e o nível do torneio.
+3. **Selecionar Dupla**: O usuário escolhe a dupla (do cadastro de usuários).
+4. **Abrir o Modal**: O modal exibe as informações do torneio, a categoria e o valor a ser pago.
+5. **Confirmar Inscrição**: O usuário confirma a inscrição e os dados são salvos no Firestore.
+
+### 4. **Salvar a Inscrição**
+
+Quando o usuário confirma a inscrição, os dados são salvos na coleção `inscricoes` no Firestore com os seguintes campos:
+
+* **userId**: ID do usuário.
+* **torneioId**: ID do torneio.
+* **nomeTorneio**: Nome do torneio.
+* **categoria**: Categoria escolhida.
+* **nivel**: Nível escolhido.
+* **valor**: Valor da inscrição.
+* **dupla**: Dupla do usuário.
+* **dataInscricao**: Data da inscrição.
+
+### 5. **Conclusão**
+
+Esse fluxo permite que o usuário:
+
+* Se inscreva em torneios.
+* Veja detalhes e valor no modal antes de confirmar a inscrição.
+* As inscrições ficam salvas no Firestore para consultas futuras.
+
+Caso queira integrar mais funcionalidades ou precise de ajustes, me avise!
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Boa observação! O código atual não contempla a variação de valores conforme a **categoria** ou **nível** do torneio. Vamos ajustar isso para que o valor da inscrição possa variar dependendo da categoria e do nível selecionados. A ideia é associar os valores de inscrição de cada categoria e nível diretamente ao torneio, e ajustar a exibição do valor de acordo com as escolhas do usuário.
+
+### Ajuste Necessário:
+
+1. **Adicionar os valores para cada categoria e nível** na coleção de torneios (ou seja, o torneio terá um valor diferente para cada categoria/nível).
+2. **Ajustar o código** para que o valor da inscrição seja alterado conforme as opções de categoria e nível selecionadas pelo usuário.
+
+### Passo 1: Modificar o Firestore para Incluir Valores por Categoria e Nível
+
+Ao cadastrar ou editar um torneio no Firestore, adicione as propriedades de valores para cada categoria e nível. O documento do torneio poderia ficar assim:
+
+```json
+{
+  "nome": "Torneio ABC",
+  "categoriaValores": {
+    "Feminino": {
+      "Iniciante": 50,
+      "Intermediário": 75,
+      "Avançado": 100
+    },
+    "Masculino": {
+      "Iniciante": 50,
+      "Intermediário": 75,
+      "Avançado": 100
+    },
+    "Misto": {
+      "Iniciante": 60,
+      "Intermediário": 90,
+      "Avançado": 120
+    },
+    "Kids": {
+      "Iniciante": 30,
+      "Intermediário": 50,
+      "Avançado": 70
+    }
+  },
+  "data": "2023-11-01",
+  "horario": "10:00",
+  "local": "Rua X, 123",
+  "link": "http://torneio.com"
+}
+```
+
+Agora, o valor é uma combinação de **categoria** e **nível**.
+
+### Passo 2: Ajustar o Código no `script.js`
+
+Agora que temos os valores diferenciados no Firestore, precisamos alterar o código para pegar o valor correto dependendo da **categoria** e **nível** selecionados pelo usuário.
+
+#### Atualizando `script.js` para Lidar com Valores Diferenciados
+
+Vamos alterar a lógica para que, ao escolher a categoria e o nível, o código busque os valores de inscrição no Firestore.
+
+```javascript
+// Carregar os torneios e preencher o dropdown
+function carregarTorneiosDropdown() {
+  firestore.collection('torneios').get().then((snapshot) => {
+    const torneioSelect = document.getElementById('torneio');
+    snapshot.forEach(doc => {
+      const torneio = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = torneio.nome;
+      torneioSelect.appendChild(option);
+    });
+  });
+}
+
+// Carregar os usuários para selecionar a dupla
+function carregarUsuariosDropdown() {
+  firestore.collection('users').get().then((snapshot) => {
+    const duplaSelect = document.getElementById('duplaInscricao');
+    snapshot.forEach(doc => {
+      const user = doc.data();
+      const option = document.createElement('option');
+      option.value = user.email;
+      option.textContent = user.nome;
+      duplaSelect.appendChild(option);
+    });
+  });
+}
+
+// Atualizar o valor com base na categoria e nível selecionados
+function atualizarValor(torneioId, categoria, nivel) {
+  firestore.collection('torneios').doc(torneioId).get().then((doc) => {
+    const torneio = doc.data();
+    const valor = torneio.categoriaValores[categoria] && torneio.categoriaValores[categoria][nivel];
+
+    if (valor) {
+      // Exibir o valor no modal
+      const modalValor = document.getElementById('modalValor');
+      modalValor.textContent = `Valor: R$ ${valor}`;
+      return valor;
+    } else {
+      alert("Valor não encontrado para esta combinação de categoria e nível.");
+    }
+  }).catch((error) => {
+    alert("Erro ao buscar o valor do torneio: " + error.message);
+  });
+}
+
+// Exibir o modal com as informações do torneio e o valor
+function mostrarModal(torneio, categoria, nivel, valor) {
+  const modal = document.getElementById('modalConfirmacao');
+  const modalInfoTorneio = document.getElementById('modalInfoTorneio');
+
+  modalInfoTorneio.textContent = `Torneio: ${torneio.nome}, Categoria: ${categoria}, Nível: ${nivel}`;
+
+  modal.style.display = 'block';
+
+  document.getElementById('confirmarInscricao').onclick = () => {
+    confirmarInscricao(torneio, categoria, nivel, valor);
+    modal.style.display = 'none';
+  };
+
+  document.getElementById('fecharModal').onclick = () => {
+    modal.style.display = 'none';
+  };
+}
+
+// Confirmar a inscrição no torneio
+function confirmarInscricao(torneio, categoria, nivel, valor) {
+  const usuario = auth.currentUser;
+  if (!usuario) {
+    alert("Você precisa estar logado para se inscrever.");
+    return;
+  }
+
+  const inscricao = {
+    userId: usuario.uid,
+    torneioId: torneio.id,
+    nomeTorneio: torneio.nome,
+    categoria,
+    nivel,
+    valor,
+    dupla: document.getElementById('duplaInscricao').value,
+    dataInscricao: new Date(),
+  };
+
+  firestore.collection('inscricoes').add(inscricao)
+    .then(() => {
+      alert("Inscrição confirmada com sucesso!");
+    })
+    .catch((error) => {
+      alert("Erro ao confirmar inscrição: " + error.message);
+    });
+}
+
+// Preencher os campos de inscrição ao selecionar um torneio
+document.getElementById('torneio').addEventListener('change', (e) => {
+  const torneioId = e.target.value;
+  if (!torneioId) return;
+
+  const categoria = document.getElementById('categoriaInscricao').value;
+  const nivel = document.getElementById('nivelInscricao').value;
+
+  // Atualiza o valor com base na categoria e no nível
+  if (categoria && nivel) {
+    atualizarValor(torneioId, categoria, nivel);
+  }
+});
+
+// Preencher o valor quando a categoria ou o nível mudar
+document.getElementById('categoriaInscricao').addEventListener('change', (e) => {
+  const torneioId = document.getElementById('torneio').value;
+  const categoria = e.target.value;
+  const nivel = document.getElementById('nivelInscricao').value;
+
+  if (torneioId && categoria && nivel) {
+    atualizarValor(torneioId, categoria, nivel);
+  }
+});
+
+document.getElementById('nivelInscricao').addEventListener('change', (e) => {
+  const torneioId = document.getElementById('torneio').value;
+  const categoria = document.getElementById('categoriaInscricao').value;
+  const nivel = e.target.value;
+
+  if (torneioId && categoria && nivel) {
+    atualizarValor(torneioId, categoria, nivel);
+  }
+});
+
+// Inicialização
+window.onload = () => {
+  carregarTorneiosDropdown();
+  carregarUsuariosDropdown();
+};
+```
+
+### 3. **Fluxo Atualizado**
+
+1. **Selecionar Torneio**: O usuário escolhe um torneio da lista.
+2. **Selecionar Categoria e Nível**: O valor será atualizado conforme a combinação de categoria e nível.
+3. **Modal de Confirmação**: O modal exibe as informações do torneio e o valor de inscrição correto.
+4. **Confirmar Inscrição**: O usuário confirma a inscrição e os dados são salvos no Firestore.
+
+### **Código Completo:**
+
+Agora, aqui está o código **completo**, incluindo todas as interações anteriores e os ajustes realizados:
+
+#### **`index.html`** (Login e Cadastro):
+
+```html
+<!-- Formulário de Login -->
+<form id="loginForm">
+  <h2>Login</h2>
+  <input type="email" placeholder="Usuário (Email)" required />
+  <input type="password" placeholder="Senha" required />
+  <button type="submit">Entrar</button>
+  <p><a href="#">Esqueceu sua senha?</a></p>
+  <p>Não tem uma conta? <a href="#" onclick="toggleCadastro()">Cadastre-se gratuitamente</a></p>
+</form>
+
+<!-- Formulário de Cadastro -->
+<form id="cadastroForm" style="display: none;">
+  <h2>Cadastro</h2>
+  <input type="email" placeholder="Email" required />
+  <input type="password" placeholder="Senha" required />
+  <button type="submit">Cadastrar</button>
+  <p>Já tem conta? <a href="#" onclick="toggleCadastro()">Voltar ao Login</a></p>
+</form>
+```
+
+#### **`torneios.html`** (CRUD de Torneios e Inscrição):
+
+```html
+<!-- Lista de Torneios -->
+<ul id="listaTorneios"></ul>
+
+<!-- Formulário de Inscrição -->
+<div class="inscricao">
+  <h3>Inscrição no Torneio</h3>
+  <label for="torneio">Selecione o Torneio:</label>
+  <select id="torneio" required>
+    <option value="">Sele
+```

@@ -1,0 +1,23 @@
+{
+	"name": "torneios-areia",
+	"version": "1.0.0",
+	"description": "Projeto criado com o objetivo de centralizar e compartilhar campeonatos de diferentes modalidades.",
+	"author": "Romario Silva",
+	"license": "ISC",
+	"keywords": [
+		"Torneio",
+		"Vôlei",
+		"Futevôlei",
+		"Beach Tênis"
+	],
+	"type": "module",
+	"main": "src/index.js",
+	"scripts": {
+		"start": "node src/index.js"
+	},
+	"dependencies": {
+		"dotenv": "^16.3.1",
+		"express": "^4.18.2",
+		"nunjucks": "^3.2.4"
+	}
+}

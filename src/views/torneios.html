@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Gerenciar Torneios</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+	<div class="container">
+		<h2>Cadastrar Torneio</h2>
+		<form id="formTorneio">
+			<input type="text" id="nome" placeholder="Nome do Torneio" required />
+
+			<select id="categoria" required>
+				<option value="">Categoria</option>
+				<option>Feminino</option>
+				<option>Masculino</option>
+				<option>Misto</option>
+				<option>Kids</option>
+			</select>
+
+			<select id="nivel" required>
+				<option value="">Nível</option>
+				<option>Iniciante</option>
+				<option>Intermediário</option>
+				<option>Avançado</option>
+			</select>
+
+			<input type="date" id="data" required />
+			<input type="time" id="horario" required />
+			<input type="number" id="valor" placeholder="Valor por pessoa (R$)" required />
+
+			<input type="text" id="cep" placeholder="CEP" required />
+			<input type="text" id="rua" placeholder="Rua" readonly />
+			<input type="text" id="bairro" placeholder="Bairro" readonly />
+			<input type="text" id="cidade" placeholder="Cidade" readonly />
+			<input type="text" id="estado" placeholder="Estado" readonly />
+
+			<input type="url" id="link" placeholder="Link do Torneio" required />
+
+			<button type="submit">Salvar Torneio</button>
+		</form>
+
+		<h3>Torneios Cadastrados</h3>
+		<ul id="listaTorneios"></ul>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+
+</html>
