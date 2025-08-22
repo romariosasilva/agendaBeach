@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configura Nunjucks
-nunjucks.configure('src/views', {
+nunjucks.configure(path.join(__dirname, 'views'), {
 	autoescape: true,
 	express: app,
 	noCache: true
