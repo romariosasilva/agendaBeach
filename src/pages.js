@@ -1,5 +1,6 @@
 import { systemConfig } from './config.js';
 import { createUser, loginUser } from './database/dbLogin.js';
+import { createTorneio, loadTorneios, deleteTorneio } from './database/dbTorneios.js';
 
 //----------------------------------------------------------------------------------------------------
 //
@@ -10,16 +11,15 @@ import { createUser, loginUser } from './database/dbLogin.js';
 //----------------------------------------------------------------------------------------------------
 
 export async function pageHome(req, res) {
-	try {
-		const options = {
-			site_name: systemConfig.siteName,
-		};
+	const options = {
+		site_name: systemConfig.siteName,
+	};
 
+	try {
 		return res.render("index.html", { options } );
 	}
 	catch (error) {
-		console.log(error);
-		// return res.render("404.html", { options } );
+		return res.render("404.html", { options, error } );
 	}
 }
 
@@ -37,24 +37,43 @@ export async function pageHome(req, res) {
 
 export async function pageLogin(req, res)
 {
-	try {
-		const options = {
-			site_name: systemConfig.siteName,
-		};
+	const options = {
+		site_name: systemConfig.siteName,
+	};
 
+	try {
 		return res.render("login.html", { options } );
 	}
 	catch (error) {
-		console.log(error);
-		// return res.render("404.html", { options } );
+		return res.render("404.html", { options, error } );
 	}
 }
 
+
+export async function pageLogin2(req, res)
+{
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
+	try {
+		return res.render("_old.login.html", { options } );
+	}
+	catch (error) {
+		return res.render("404.html", { options, error } );
+	}
+}
+
+
 export async function login(req, res)
 {
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
 	const user = {
-		email: req.body.email,
-		senha: req.body.senha
+		email: req.body.signin_email,
+		senha: req.body.signin_password
 	}
 
 	try {
@@ -66,19 +85,98 @@ export async function login(req, res)
 		}
 		else
 		{
-			console.log(userLogin.message);
+			let message = userLogin.message;
+
+			return res.render("404.html", { options, message } );
 			// showToast(userCreated.message, userCreated.status);
 		}
 	}
 	catch (error)
 	{
-		console.log(error);
-		// return res.render("404.html", { error } );
+		return res.render("404.html", { options, error } );
 	}
 }
 
 export async function createLogin(req, res)
 {
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
+	const user = {
+		email: req.body.signup_email,
+		senha: req.body.signup_senha
+	}
+
+	try {
+		const userCreated = await createUser( user );
+
+		if( userCreated.status == 'success' )
+		{
+			return res.redirect("/login");
+		}
+		else
+		{
+			let message = userCreated.message;
+
+			return res.render("404.html", { options, message } );
+			// showToast(userCreated.message, userCreated.status);
+		}
+	}
+	catch (error)
+	{
+		return res.render("404.html", { options, error } );
+	}
+}
+
+
+
+
+
+//----------------------------------------------------------------------------------------------------
+//
+//
+//	FUNÇÕES TORNEIOS
+//
+//
+//----------------------------------------------------------------------------------------------------
+
+export async function pageTorneios(req, res)
+{
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
+	try {
+		const torneios = await loadTorneios();
+
+		return res.render( "torneios.html", { options, torneios } );
+	}
+	catch (error) {
+		return res.render("404.html", { options, error } );
+	}
+}
+
+export async function formTorneio(req, res)
+{
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
+	try {
+		return res.render( "torneio.html", { options } );
+	}
+	catch (error) {
+		return res.render("404.html", { options, error } );
+	}
+}
+
+export async function createTorneios(req, res)
+{
+	const options = {
+		site_name: systemConfig.siteName,
+	};
+
 	const user = {
 		email: req.body.email,
 		senha: req.body.senha
@@ -87,57 +185,51 @@ export async function createLogin(req, res)
 	try {
 		const userCreated = await createUser( user );
 
-		console.log( userCreated );
-
 		if( userCreated.status == 'success' )
 		{
 			return res.redirect("/login");
 		}
 		else
 		{
-			console.log(userCreated.message);
+			let message = userCreated.message;
+
+			return res.render("404.html", { options, message } );
 			// showToast(userCreated.message, userCreated.status);
 		}
 	}
 	catch (error)
 	{
-		console.log(error);
-		// return res.render("404.html", { error } );
-	}
-
-}
-
-//----------------------------------------------------------------------------------------------------
-//	FUNÇÕES TORNEIOS
-//----------------------------------------------------------------------------------------------------
-
-export async function pageTorneios(req, res)
-{
-	try
-	{
-		const options = {
-			site_name: systemConfig.siteName,
-		};
-
-		return res.render( "torneios.html", { options } );
-	}
-	catch (error)
-	{
-		console.log(error);
-		// return res.render("404.html", { options } );
+		return res.render("404.html", { options, error } );
 	}
 }
 
 
+
+
+
 //----------------------------------------------------------------------------------------------------
+//
+//
 //	EXPORT DAS FUNÇÕES
+//
+//
 //----------------------------------------------------------------------------------------------------
 
-export default
-{
-	pageHome,
-	pageLogin,
-	pageTorneios,
-	createLogin,
-	login
-}
+export const modules = {
+	home: {
+		pageHome,
+	},
+	login: {
+		pageLogin,
+		pageLogin2,
+		createLogin,
+		login,
+	},
+	torneio: {
+		pageTorneios,
+		formTorneio,
+		createTorneios
+	}
+};
+
+export default modules;

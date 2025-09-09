@@ -1,12 +1,9 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { app } from "../config.js";
-
-// Inicialização Firebase Authentication
-const auth	= getAuth( app );
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../auth/authentication.js";
 
 export async function createUser( user ) {
-	let vStatus = "";
-	let vMessage = "";
+	let vStatus = '';
+	let vMessage = '';
 
 	await createUserWithEmailAndPassword(auth, user.email, user.senha)
 	.then(() => {
@@ -14,36 +11,44 @@ export async function createUser( user ) {
 		vMessage = 'Cadastro realizado com sucesso!';
 	})
 	.catch(error => {
-		console.error(error);
 		vStatus = 'error';
-		vMessage = error.message;
-	});
-}
-
-export async function loginUser( user ) {
-	let vStatus = "";
-	let vMessage = "";
-
-	await signInWithEmailAndPassword(auth, user.email, user.senha)
-	.then(userCredential => {
-		vStatus = 'success';
-		vMessage = 'Seja bem-vindo, ' + userCredential.user
-	})
-	.catch(error => {
-		vStatus = 'error'
 		vMessage = error.message;
 	});
 
 	return {
-			status: vStatus,
-			message: vMessage
-		};
+		status: vStatus,
+		message: vMessage
+	};
+}
+
+export async function loginUser( user ) {
+	let vStatus = '';
+	let vMessage = '';
+
+	await signInWithEmailAndPassword(auth, user.email, user.senha)
+	.then(userCredential => {
+		vStatus = 'success';
+		vMessage = 'Seja bem-vindo, ' + userCredential.user;
+	})
+	.catch(error => {
+		vStatus = 'error';
+
+		if ( error.code === 'auth/network-request-failed' )
+			vMessage = "Network error. Please check your internet connection.";
+		else
+			vMessage = error.code;
+	});
+
+	return {
+		status: vStatus,
+		message: vMessage
+	};
 }
 
 // Logout
 export async function logout() {
-	let vStatus = "";
-	let vMessage = "";
+	let vStatus = '';
+	let vMessage = '';
 
 	await auth.signOut()
 		.then(() => {
@@ -65,17 +70,29 @@ export async function logout() {
 // Verifica se usuário já está logado
 // auth.onAuthStateChanged(user => {
 // 	if (user) {
-// 		if ( !window.location.pathname.endsWith("torneios") ) {
-// 			window.location.href = "/torneios";
+// 		if ( !window.location.pathname.endsWith('torneios') ) {
+// 			window.location.href = '/torneios';
 // 		}
 // 	} else {
-// 		window.location.href = "/login";
+// 		window.location.href = '/login';
 // 	}
 // });
 
 
+
+
+
+//----------------------------------------------------------------------------------------------------
+//
+//
+//	EXPORT DAS FUNÇÕES
+//
+//
+//----------------------------------------------------------------------------------------------------
+
 export default
 {
+	auth,
 	createUser,
 	loginUser,
 	logout

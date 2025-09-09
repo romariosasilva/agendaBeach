@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+	{% include "components/meta_tags.html" %}
+
+	<title>{{ options.site_name }} | Login</title>
+
+	<link rel="stylesheet" href="/styles/_old.login.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+
+<body>
+	<div class="login-container">
+		<div class="login-card">
+			<form class="login-form" id="cadastro-form" style="display: none;" action="/createLogin" method="POST">
+				<h1 class="login-title">
+					<i class="fas fa-volleyball"></i>Cadastro
+				</h1>
+				<p class="login-subtitle">
+					Faça o cadastro e tenha acesso a todas as funcionalidades
+					<i class="fas fa-heart"></i>
+				</p>
+				<div class="input-group">
+					<label for="text"><i class="fas fa-user"></i></label>
+					<input type="text" name="name" id="name" placeholder="Seu nome" required>
+				</div>
+				<div class="input-group">
+					<label for="email"><i class="fas fa-envelope"></i></label>
+					<input type="email" name="email" id="email" placeholder="Seu e-mail" required>
+				</div>
+				<div class="input-group">
+					<label for="senha"><i class="fas fa-lock"></i></label>
+					<input type="password" name="senha" id="senha" placeholder="Sua senha" required>
+				</div>
+				<button type="submit" class="btn-login">Cadastrar</button>
+				<p>Já tem conta? <a href="#" onclick="toggleCadastro()">Voltar ao Login</a></p>
+			</form>
+
+			<form class="login-form" id="login-form" action="/login" method="POST">
+				<h1 class="login-title">
+					<i class="fas fa-volleyball"></i>Login
+				</h1>
+				<div class="input-group">
+					<label for="email"><i class="fas fa-envelope"></i></label>
+					<input type="email" name="email" id="email" placeholder="Seu e-mail" required>
+				</div>
+				<div class="input-group">
+					<label for="senha"><i class="fas fa-lock"></i></label>
+					<input type="password" name="senha" id="senha" placeholder="Sua senha" required>
+				</div>
+				<button type="submit" class="btn-login">Entrar</button>
+				<p><a href="#">Esqueceu sua senha?</a></p>
+				<p class="register-link">Não tem uma conta? <a href="#" onclick="toggleCadastro()">Cadastre-se gratuitamente</a></p>
+			</form>
+
+		</div>
+	</div>
+
+	<script src="/scripts/login.js"></script>
+</body>
+
+</html>
