@@ -128,3 +128,5 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+/agenda-beach-firebase-adminsdk-fbsvc-005091093e.json
