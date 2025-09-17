@@ -1,5 +1,6 @@
 import { db } from "./db.js";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import tempoRestante from '../utils/format.js';
 
 let tournamentsSnapshot = null;
 
@@ -22,12 +23,29 @@ export async function loadTorneios() {
 
 	tournamentsSnapshot.forEach(doc => {
 		const torneio = doc.data();
+		const timestamp = torneio.data.seconds * 1000;
+		const dateObj = new Date(timestamp);
+
 		torneios.push({
 			id: doc.id,
 			nome: torneio.nome,
 			modalidade: torneio.modalidade,
-			data: torneio.data,
-			horario: torneio.hora
+			data: dateObj.toLocaleString(),
+			tempo: tempoRestante(timestamp),
+			imagem: torneio.imagem,
+			link_inscricao: torneio.link_inscricao,
+			link_local: torneio.link_local,
+			categoria: torneio.categoria,
+			nivel: torneio.nivel,
+			valor: torneio.valor,
+			regata: {
+				obrigatorio: torneio.regata_obrigatorio,
+				valor: torneio.regata_preco
+			},
+			organizador: {
+				nome: torneio.organizador_nome,
+				link: torneio.organizador_link
+			}
 		});
 	});
 
