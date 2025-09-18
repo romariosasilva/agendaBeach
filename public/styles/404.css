@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css?family=Arvo&display=swap");
+
+.page-404 {
+	background: #fff;
+	font-family: 'Arvo', serif;
+}
+
+.page-404 img {
+	width: 100%;
+}
+
+.four_zero_four_bg {
+	height: 400px;
+	background-image: url(https://influencermarketinghub.com/wp-content/uploads/2020/06/sticker-gif-example-1.gif);
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.four_zero_four_bg h1 {
+	font-size: 80px;
+}
+
+.four_zero_four_bg h3 {
+	font-size: 80px;
+}
+
+.link_404 {
+	color: #fff !important;
+	padding: 10px 20px;
+	background: #39ac31;
+	margin: 20px 0;
+	display: inline-block;
+}
+
+.contant_box_404 {
+	margin-top: -50px;
+}

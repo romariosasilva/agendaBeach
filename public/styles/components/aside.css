@@ -1,0 +1,11 @@
+aside {
+	position: relative;
+	height: 100vh;
+	width: 16rem;
+	background-color: #1f1f1f;
+	border-color: blueviolet;
+	border-right-width: 4px;
+		border-right-style: solid;
+		border-top-right-radius: 0.75rem;
+		border-bottom-right-radius: 0.75rem;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+	{% include "components/meta_tags.html" %}
+
+	<title>{{ options.site_name }} | Página Não Encontrada</title>
+
+	<!-- FONTS, MATERIAL ICONS GOOGLE / FONT AWESOME ICONS -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anta:wght@400;700&amp;family=Archivo:wght@400;700&amp;family=Poppins:wght@400;600&amp;display=swap">
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css'>
+
+	<!-- STYLES -->
+	<link rel="stylesheet" href="/styles/main.css">
+	<link rel="stylesheet" href="/styles/404.css">
+</head>
+
+<body>
+	<section class="page-404">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="col-sm-10 col-sm-offset-1 text-center">
+						<div class="four_zero_four_bg">
+							<h1 class="text-center">404</h1>
+						</div>
+						<div class="contant_box_404">
+							<h3 class="h2">Tá perdido, colega?</h3>
+							<p>Erro retornado: {{ message }}</p>
+							<!-- <p>A página que você está tentando acessar POR ENQUANTO não existe.</p> -->
+							<a href="/" class="link_404">Ir para página Home</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</body>
+
+</html>
